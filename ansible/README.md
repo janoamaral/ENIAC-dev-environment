@@ -113,6 +113,36 @@ It automatically obtains and renews the TLS certificate for `coder_domain`, then
 
 Before provisioning, the domain DNS record must point to the VPS public IP.
 
+### Reverse proxy responsibility
+
+Caddy and Coder split the public-serving job as follows:
+
+```text
+Caddy:
+- owns public ports 80 and 443;
+- manages TLS certificates;
+- redirects HTTP to HTTPS;
+- proxies to Coder over localhost HTTP.
+
+Coder:
+- listens only on 127.0.0.1:3000;
+- does not manage TLS;
+- does not force redirects to CODER_ACCESS_URL.
+```
+
+This is why the generated `/etc/coder.d/coder.env` sets:
+
+```text
+CODER_REDIRECT_TO_ACCESS_URL=false
+```
+
+That value is intentional. Caddy already redirects public HTTP traffic to
+HTTPS, so a second redirect from Coder to its own `CODER_ACCESS_URL` would
+make `https://coder.example.com` redirect to itself in an infinite loop.
+`CODER_ACCESS_URL` is still set so Coder knows its public URL for links and
+callbacks; it just must not redirect to it. If you ever remove Caddy and
+expose Coder directly, re-enable the flag.
+
 ### Cockpit
 
 Cockpit is installed from Ubuntu packages and uses its normal systemd socket activation.
@@ -525,10 +555,13 @@ It contains values similar to:
 CODER_ACCESS_URL=https://coder.example.com
 CODER_HTTP_ADDRESS=127.0.0.1:3000
 CODER_TLS_ENABLE=false
+CODER_REDIRECT_TO_ACCESS_URL=false
 CODER_PG_CONNECTION_URL=postgresql://...
 ```
 
-Caddy owns HTTPS, so Coder does not need to manage certificates itself.
+Caddy owns HTTPS, so Coder does not need to manage certificates itself, and
+`CODER_REDIRECT_TO_ACCESS_URL=false` is intentional because Caddy already
+handles the public HTTP-to-HTTPS redirect.
 
 ### Caddy
 
