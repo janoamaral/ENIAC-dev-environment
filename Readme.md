@@ -1,4 +1,11 @@
-# Coder Development Environment
+███████ ███    ██ ██  █████   ██████ 
+██      ████   ██ ██ ██   ██ ██      
+█████   ██ ██  ██ ██ ███████ ██      
+██      ██  ██ ██ ██ ██   ██ ██      
+███████ ██   ████ ██ ██   ██  ██████ 
+                                     
+
+# ENIAC Development Environment
 
 A reproducible Ubuntu-based development environment designed for use with [Coder](https://coder.com/) workspaces.
 
